@@ -1,0 +1,60 @@
+[project]
+name = "captioner"
+version = "0.1.0"
+description = "n-modality captioner: shared Q-Former + LoRA-adapted LLM decoder"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.2",
+    # Qwen3.5-9B's own config.json declares transformers_version "4.57.0.dev0" (a pre-release
+    # build, confirmed via a real check against the hosted config) — model_type "qwen3_5" almost
+    # certainly isn't recognized by transformers 4.42. This floor is a best-effort guess at the
+    # first stable release likely to include it; if `AutoConfig.from_pretrained` raises an
+    # unrecognized-model-type error, install transformers from the `main` branch on GitHub
+    # instead of from PyPI (`pip install git+https://github.com/huggingface/transformers`).
+    "transformers>=4.57",
+    "peft>=0.11",
+    "accelerate>=0.30",
+    "huggingface_hub>=0.23",
+    "pandas>=2.2",
+    "pyarrow>=15.0",
+    "numpy>=1.26",
+    "omegaconf>=2.3",
+    "astropy>=6.0",
+    "tqdm>=4.66",
+    "pillow>=10.0", # PIL.Image — the format Qwen's own AutoProcessor chat-template image
+    # content blocks expect (eval/backend.py's grz->RGB composite side).
+    # Not used by AION's pathway at all, only Qwen's native vision one.
+    "torchvision>=0.17", # Confirmed real, not optional: Qwen3.5's AutoProcessor resolves to
+    # Qwen3VLProcessor, a single class bundling BOTH image and video
+    # handling — constructing it (AutoProcessor.from_pretrained(...))
+    # eagerly initializes its video sub-component too, which raises
+    # ImportError without torchvision, even though we only ever pass
+    # images and never call anything video-related ourselves.
+    "onnxruntime>=1.17", # runs the frozen ATCAT light-curve encoder (light-curve/atcat) during
+    # offline embedding caching only — training never imports it. CPU build
+    # is sufficient: the model is ~12MB and runs once over the dataset.
+    "polymathic-aion", # provides the `aion` import (AION, CodecManager, aion.modalities.*)
+    # — see src/captioner/encoders/aion_common.py. No version pinned here;
+    # confirm against https://huggingface.co/polymathic-ai/aion-base's
+    # install instructions if a specific version turns out to matter.
+    "matplotlib>=3.10.9",
+    "pillow>=12.3.0",
+    "scikit-learn>=1.7.2",
+    "google-genai>=2.22.0",
+    "python-dotenv>=1.2.3",
+    "jinja2>=3.1.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"

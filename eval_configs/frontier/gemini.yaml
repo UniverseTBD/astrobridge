@@ -1,0 +1,7 @@
+frontier_type: gemini
+gemini_model: gemini-3.8-flash
+gemini_num_workers: 8
+gemini_temperature: 0.0
+max_tokens: 1024
+fallback_max_tokens: 128
+

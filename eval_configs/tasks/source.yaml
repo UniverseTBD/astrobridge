@@ -1,0 +1,6 @@
+name: source
+kwargs:
+  active_classes:
+    GALAXY: Galaxy
+    QSO: Quasar
+

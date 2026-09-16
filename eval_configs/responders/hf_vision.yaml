@@ -1,0 +1,6 @@
+responder_type: hf_vision
+hf_model_id: Qwen/Qwen3.5-9B
+max_tokens: 2048
+fallback_max_tokens: 256
+repetition_penalty: 1.1
+gpu: A10G

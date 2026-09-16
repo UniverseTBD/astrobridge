@@ -1,0 +1,16 @@
+suite_name: test_suite
+description: "Quick test suite"
+benchmark: all
+
+hf_repo: ibrahimhabibeg/spectra_captions_dataset
+hf_subdir: test_evals/captions
+
+models:
+
+  - id: astrobridge
+    responder_type: astrobridge
+    name: "AstroBridge-v8"
+    astrobridge_id: UniverseTBD/astrobridge-model-v8
+    modal_gpu: "A10G"
+    batch_size: 4
+

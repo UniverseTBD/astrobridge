@@ -1,0 +1,62 @@
+suite_name: paper_controls
+description: "Evals for the AstroBridge paper and control baselines on GH200 (96GB)"
+benchmark: all
+
+hf_repo: UniverseTBD/AstroBridge-Data
+hf_subdir: evals/captions
+
+models:
+  # --- AstroBridge ---
+  - id: astrobridge
+    responder_type: astrobridge
+    name: "AstroBridge-v8"
+    astrobridge_id: UniverseTBD/astrobridge-model-v8
+    batch_size: 128
+
+  # --- Qwen-3.5-9B Controls ---
+  - id: qwen_3.5_9b_vision
+    responder_type: hf_vision
+    name: "Qwen-3.5-9B-Vision-Plot"
+    hf_model_id: Qwen/Qwen3.5-9B
+    batch_size: 64
+
+
+  # --- Gemma 4 12B Controls ---
+  - id: gemma_4_12b_vision
+    responder_type: hf_vision
+    name: "Gemma-4-12B-Vision-Plot"
+    hf_model_id: google/gemma-4-12b-it
+    batch_size: 64
+
+  - id: gemma_4_12b_text
+    responder_type: hf_text
+    name: "Gemma-4-12B-Text"
+    hf_model_id: google/gemma-4-12b-it
+    batch_size: 128
+
+  # --- Gemma 4 31B Controls ---
+  - id: gemma_4_31b_vision
+    responder_type: hf_vision
+    name: "Gemma-4-31B-Vision-Plot"
+    hf_model_id: google/gemma-4-31b-it
+    batch_size: 8
+
+  - id: gemma_4_31b_text
+    responder_type: hf_text
+    name: "Gemma-4-31B-Text"
+    hf_model_id: google/gemma-4-31b-it
+    batch_size: 16
+
+  # --- Qwen-3.8-27B Controls ---
+  - id: qwen_3.8_27b_vision
+    responder_type: hf_vision
+    name: "Qwen-3.8-27B-Vision-Plot"
+    hf_model_id: Qwen/Qwen3.8-27B
+    batch_size: 32
+
+  # --- Meta Muse Glimmer Controls ---
+  - id: meta_muse_glimmer_vision
+    responder_type: hf_vision
+    name: "Meta-Muse-Glimmer-Vision-Plot"
+    hf_model_id: meta-models/Muse-Glimmer-30B
+    batch_size: 32
