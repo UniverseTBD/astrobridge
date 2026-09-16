@@ -1,0 +1,8 @@
+name: subclass
+kwargs:
+  active_classes:
+    AGN: AGN
+    STARBURST: Starburst
+    STARFORMING: Starforming
+    BROADLINE: Broadline
+

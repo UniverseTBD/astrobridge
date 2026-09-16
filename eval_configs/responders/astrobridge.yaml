@@ -1,0 +1,5 @@
+responder_type: astrobridge
+astrobridge_id: UniverseTBD/astrobridge-model-v7
+max_tokens: 2048
+fallback_max_tokens: 128
+gpu: A100-80GB
