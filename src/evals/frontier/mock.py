@@ -59,7 +59,7 @@ class MockFrontierModel(FrontierModel):
 
         return FrontierResponse(
             raw_text=raw_text,
-            parsed=parsed if parsed is not None else "UNKNOWN",
+            parsed=parsed,
             forced_fallback=forced_fallback,
             metadata={"mock": True},
         )

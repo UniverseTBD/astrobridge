@@ -4,6 +4,15 @@ benchmark: all
 
 hf_repo: UniverseTBD/AstroBridge-Data
 hf_subdir: evals/captions
+hf_eval_subdir: evals/frontier_evals
+
+frontier: eval_configs/frontier/gemini.yaml
+baseline_model: astrobridge
+tasks:
+  - source
+  - subclass
+  - distance
+  - emission_lines
 
 models:
   # --- AstroBridge ---
