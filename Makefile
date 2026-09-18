@@ -3,7 +3,7 @@
 # Override on the command line, e.g.: make stage1 ACCELERATE_CONFIG=configs/my_cluster.yaml
 ACCELERATE_CONFIG ?= configs/accelerate_ddp.yaml
 
-.PHONY: test manifest captions cache stage1 eval stage2 install check-access publish infer eval-lightcurve collect-image-labels score-image-eval score-image-eval-debiased
+.PHONY: test manifest captions cache stage1 eval stage2 install check-access publish infer eval-lightcurve collect-image-labels score-image-eval score-image-eval-debiased 
 
 install:
 	uv pip install -e ".[dev]"
