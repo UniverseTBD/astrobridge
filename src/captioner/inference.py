@@ -90,7 +90,11 @@ def load_inference_model(
 
 
 def load_inference_model_from_hub(
-    cfg: DictConfig, repo_id: str, device: str = "cuda", modality_names: list[str] | None = None
+    cfg: DictConfig,
+    repo_id: str,
+    device: str = "cuda",
+    modality_names: list[str] | None = None,
+    revision: str | None = None,
 ) -> tuple[Captioner, Any, dict]:
     """Loads a model *published* via scripts/06_publish_model.py (e.g. from `make publish`),
     as opposed to `load_inference_model` above which reads this repo's own internal training-
@@ -113,7 +117,8 @@ def load_inference_model_from_hub(
     from peft import PeftModel
 
     llm, tokenizer = build_llm(cfg)
-    llm = PeftModel.from_pretrained(llm, repo_id)
+    revision_kwargs = {"revision": revision} if revision is not None else {}
+    llm = PeftModel.from_pretrained(llm, repo_id, **revision_kwargs)
     d_llm = get_llm_hidden_size(llm)
 
     out_dims = {n: int(c.out_dim) for n, c in cfg.modalities.items()}
@@ -126,7 +131,7 @@ def load_inference_model_from_hub(
         projector_dropout=float(cfg.projector.dropout),
         adapter_target_norm=llm_embedding_norm(llm),
     )
-    middle_path = hf_hub_download(repo_id=repo_id, filename="middle.pt")
+    middle_path = hf_hub_download(repo_id=repo_id, filename="middle.pt", **revision_kwargs)
     fusion_stack.load_state_dict(torch.load(middle_path, map_location="cpu", weights_only=False))
 
     model = Captioner(fusion_stack, llm, n_queries=int(cfg.qformer.n_queries))

@@ -126,7 +126,11 @@ def load_host_image_table(
 _BAND_PLOT_STYLE = {1: {"color": "tab:green", "label": "g-band"}, 2: {"color": "tab:red", "label": "r-band"}}
 
 
-def render_lightcurve_plot(row: pd.Series) -> Image.Image:
+def render_lightcurve_plot(
+    row: pd.Series,
+    *,
+    x_axis_label: str = "Days since first detection",
+) -> Image.Image:
     """Renders one `load_lightcurve_table` row's `atcat_*` photometry as a flux-vs-time PNG
     scatter/errorbar plot — the base model's `{"image": <PIL.Image>}` input (`eval.backend`'s
     base-side contract). Masks by `atcat_use` first (the excluded-i sentinel at `atcat_band_id=0`
@@ -156,7 +160,7 @@ def render_lightcurve_plot(row: pd.Series) -> Image.Image:
         if np.any(m):
             ax.errorbar(mjd[m] - t0, flux[m], yerr=flux_err[m], fmt="o", markersize=4, capsize=2, **style)
             any_plotted = True
-    ax.set_xlabel("Days since first detection")
+    ax.set_xlabel(x_axis_label)
     ax.set_ylabel("Flux (SNANA FLUXCAL, zp=27.5)")
     # Deliberately no object_id in the title — these are real, catalogued ZTF/YSE supernovae, so a
     # title naming the object hands the base model (native vision, reads text baked into the image
