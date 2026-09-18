@@ -1,0 +1,32 @@
+# Everything except the encoders is trainable.
+init_from: outputs/checkpoints/stage1/best/middle.pt
+
+param_groups:
+  - {params: [projectors, modality_identity, qformer, adapter], lr: 1.0e-5}
+  - {params: lora, lr: 1.0e-4}
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  # These are standard Llama-family names. Qwen3.5 (Qwen3_5ForConditionalGeneration) mixes in
+  # Gated DeltaNet layers, which may use different projection names for at least some layers —
+  # confirm against `[n for n, _ in llm.named_modules()]` on the loaded base model before
+  # trusting this list. train/stage2.py raises loudly at startup if this ends up matching zero
+  # parameters, rather than silently training nothing on the LLM side.
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+batch_size: 32
+micro_batch_size: 4
+epochs: 15
+# patience 1 stopped the v6 run at epoch 5 (~102 optimizer steps) on a single non-improving
+# epoch, while the fusion stack was still visibly moving. 3 gives it room without running long.
+early_stop: {metric: val_loss, patience: 3}
+warmup_frac: 0.10
+weight_decay: 0.05
+# LLM precision is controlled by configs/model.yaml's llm.dtype, not here. MUST match stage1 —
+# see §10 pitfall 6; train/stage2.py asserts this at startup.
+
+checkpoint:
+  dir: outputs/checkpoints/stage2
+  save_every_n_steps: 500

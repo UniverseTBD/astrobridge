@@ -1,0 +1,14 @@
+trainable: [projectors, modality_identity, qformer, adapter]   # LLM frozen, encoders not loaded
+
+lr: 1.0e-4
+schedule: {type: cosine, warmup_frac: 0.05}
+batch_size: 32            # effective; use grad accumulation
+micro_batch_size: 4
+epochs: 30
+early_stop: {metric: val_loss, patience: 5}
+weight_decay: 0.05
+# LLM precision is controlled by configs/model.yaml's llm.dtype, not here.
+
+checkpoint:
+  dir: outputs/checkpoints/stage1
+  save_every_n_steps: 500
