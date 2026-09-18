@@ -7,10 +7,31 @@ hf_subdir: test_evals/captions
 
 models:
 
-  - id: astrobridge
-    responder_type: astrobridge
-    name: "AstroBridge-v8"
-    astrobridge_id: UniverseTBD/astrobridge-model-v8
-    modal_gpu: "A10G"
+  - id: meta_muse_glimmer_vision
+    responder_type: hf_vision
+    name: "Meta-Muse-Glimmer-Vision-Plot"
+    hf_model_id: meta-models/Muse-Glimmer-30B
     batch_size: 4
+    modal_gpu: "A100-80GB"
+
+  - id: meta_muse_glimmer_text
+    responder_type: hf_text
+    name: "Meta-Muse-Glimmer-Text"
+    hf_model_id: meta-models/Muse-Glimmer-30B
+    batch_size: 4
+    modal_gpu: "A100-80GB"
+
+  # - id: qwen_3.5_9b_vision
+  #   responder_type: hf_vision
+  #   name: "Qwen-3.5-9B-Vision-Plot"
+  #   hf_model_id: Qwen/Qwen3.5-9B
+  #   modal_gpu: "A10G"
+  #   batch_size: 4
+
+  # - id: astrobridge
+  #   responder_type: astrobridge
+  #   name: "AstroBridge-v8"
+  #   astrobridge_id: UniverseTBD/astrobridge-model-v8
+  #   modal_gpu: "A10G"
+  #   batch_size: 4
 

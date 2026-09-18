@@ -71,6 +71,57 @@ def upload_caption_file(
     return str(result)
 
 
+def upload_file_to_hf(
+    local_path: Union[str, Path],
+    hf_repo: Optional[str] = None,
+    hf_path: Optional[str] = None,
+    commit_message: Optional[str] = None,
+    token: Optional[str] = None,
+) -> str:
+    return upload_caption_file(
+        local_path=local_path,
+        hf_repo=hf_repo,
+        hf_path=hf_path,
+        commit_message=commit_message,
+        token=token,
+    )
+
+
+def upload_folder_to_hf(
+    local_dir: Union[str, Path],
+    hf_repo: Optional[str] = None,
+    hf_path: Optional[str] = None,
+    commit_message: Optional[str] = None,
+    token: Optional[str] = None,
+) -> str:
+    folder = Path(local_dir)
+    if not folder.is_dir():
+        raise NotADirectoryError(f"Local directory does not exist: {folder}")
+
+    repo_id = hf_repo or DEFAULT_HF_DATA_REPO
+    path_in_repo = hf_path or f"evals/frontier_evals/{folder.name}"
+
+    auth_token = token or get_hf_token()
+    if not auth_token:
+        raise ValueError(
+            "Hugging Face write token is required to upload files. Please set HF_TOKEN in your environment."
+        )
+
+    msg = commit_message or f"Upload evaluations: {folder.name}"
+    api = HfApi(token=auth_token)
+
+    print(f"Uploading folder {folder} -> {repo_id}:{path_in_repo} ...")
+    result = api.upload_folder(
+        folder_path=str(folder),
+        path_in_repo=path_in_repo,
+        repo_id=repo_id,
+        repo_type="dataset",
+        commit_message=msg,
+    )
+    print(f"Successfully uploaded folder to {repo_id}:{path_in_repo}")
+    return str(result)
+
+
 def check_and_download_existing(
     hf_repo: str,
     hf_path: str,
@@ -156,6 +207,8 @@ def write_run_metadata(
 __all__ = [
     "get_hf_token",
     "upload_caption_file",
+    "upload_file_to_hf",
+    "upload_folder_to_hf",
     "check_and_download_existing",
     "get_git_commit_sha",
     "write_run_metadata",
