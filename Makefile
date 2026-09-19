@@ -3,7 +3,7 @@
 # Override on the command line, e.g.: make stage1 ACCELERATE_CONFIG=configs/my_cluster.yaml
 ACCELERATE_CONFIG ?= configs/accelerate_ddp.yaml
 
-.PHONY: test manifest captions cache stage1 eval stage2 install check-access publish infer eval-lightcurve collect-image-labels score-image-eval score-image-eval-debiased 
+.PHONY: test manifest captions spectra-captions cache stage1 eval stage2 install check-access publish infer eval-lightcurve collect-image-labels score-image-eval score-image-eval-debiased
 
 install:
 	uv pip install -e ".[dev]"
@@ -18,7 +18,10 @@ manifest:
 	python scripts/00_build_manifest.py
 
 captions:
-	python scripts/01_generate_captions.py
+	python scripts/01_generate_captions.py $(if $(SPECTRA_CAPTIONS),"sources.spectra_captions.local_path=$(SPECTRA_CAPTIONS)")
+
+spectra-captions:
+	uv run --no-project --python 3.13 scripts/spectra/caption_spectra.py $(ARGS)
 
 cache:
 	python scripts/02_cache_embeddings.py
@@ -48,17 +51,15 @@ infer:
 		$(if $(SURVEY),--spectrum-survey $(SURVEY)) \
 		$(if $(LIGHTCURVE),--lightcurve-npz $(LIGHTCURVE))
 
-# See eval/README.md — TRACK/BACKEND/LIMIT are optional, defaulting per eval/runners/*.py's own
-# argparse defaults (lightcurve_only / base_only, local, no limit).
+# TRACK/BACKEND/LIMIT are optional
+# defaulting per eval/runners/*.py's own argparse defaults
+# (lightcurve_only / base_only, local, no limit).
 eval-lightcurve:
 	uv run python -m eval.runners.run_lightcurve_eval \
 		$(if $(TRACK),--track $(TRACK)) \
 		$(if $(BACKEND),--backend $(BACKEND)) \
 		$(if $(LIMIT),--limit $(LIMIT))
 
-# Two steps, deliberately not one target — see eval/README.md. Step 1 is the expensive/billed
-# one (N/SEED/BACKEND optional, default to collect_image_labels.py's own argparse defaults);
-# step 2 needs the exact output path step 1 printed (IN=outputs/eval/raw_generations/...).
 collect-image-labels:
 	uv run python -m eval.runners.collect_image_labels \
 		$(if $(N),--n $(N)) \
@@ -69,8 +70,6 @@ score-image-eval:
 	@test -n "$(IN)" || (echo "Usage: make score-image-eval IN=outputs/eval/raw_generations/galaxy10_seed0_n150.json" && exit 1)
 	uv run python -m eval.runners.score_image_eval --in $(IN)
 
-# Separate, parked script — needs a real network crossmatch, meaningfully slower than
-# score-image-eval above, so it's not bundled into that target automatically.
 score-image-eval-debiased:
 	@test -n "$(IN)" || (echo "Usage: make score-image-eval-debiased IN=outputs/eval/raw_generations/galaxy10_seed0_n150.json" && exit 1)
 	uv run python -m eval.runners.score_image_eval_debiased --in $(IN)

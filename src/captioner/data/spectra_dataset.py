@@ -269,49 +269,85 @@ def _deduplicate_by_object_id(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_gemini_spectra_captions(
-    hf_path: str, filename: str, revision: str | None = None, cache_dir: Path | None = None
+    hf_path: str | None = None,
+    filename: str | None = None,
+    revision: str | None = None,
+    cache_dir: Path | None = None,
+    *,
+    local_path: str | Path | None = None,
 ) -> pd.DataFrame:
-    """One row per object with a usable Gemini-generated spectrum caption: `wiki_entity_id`,
-    `caption`. Drops rows where the model itself flagged `is_insufficient=True` (not enough
-    evidence to caption confidently) and rows missing `object_key`/`caption`. Everything else in
-    the record (`thought_summaries`, `usage`, `provenance`, top-level `ra`/`dec`/`model`/etc.) is
-    metadata we don't need here and is discarded.
+    """Load upstream spectra-captioning JSONL locally or from Hugging Face.
+
+    A supplied local path takes precedence and never falls back to a download.
+    The result always has `wiki_entity_id` and `caption` columns, including when
+    every record was marked insufficient. Generation metadata stays in the JSONL.
     """
-    from huggingface_hub import hf_hub_download
+    if local_path is None:
+        if not hf_path or not filename:
+            raise ValueError("Supply local_path or both hf_path and filename for spectra captions")
+        from huggingface_hub import hf_hub_download
 
-    local_path = hf_hub_download(
-        repo_id=hf_path,
-        filename=filename,
-        repo_type="dataset",
-        revision=revision,
-        cache_dir=str(cache_dir) if cache_dir else None,
-    )
+        local_path = hf_hub_download(
+            repo_id=hf_path,
+            filename=filename,
+            repo_type="dataset",
+            revision=revision,
+            cache_dir=str(cache_dir) if cache_dir else None,
+        )
+    return load_spectra_captions_jsonl(local_path)
 
-    rows = []
-    n_insufficient = 0
-    n_missing = 0
-    with open(local_path) as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
+
+def load_spectra_captions_jsonl(path: str | Path) -> pd.DataFrame:
+    """Read usable captions, rejecting conflicting captions for the same object."""
+    path = Path(path)
+    captions: dict[str, str] = {}
+    n_insufficient = n_missing = n_duplicates = 0
+    with path.open(encoding="utf-8") as fh:
+        for line_number, line in enumerate(fh, start=1):
+            if not line.strip():
                 continue
-            rec = json.loads(line)
-            object_key = rec.get("object_key")
-            output = rec.get("output") or {}
-            if output.get("is_insufficient"):
-                n_insufficient += 1
-                continue
-            caption = output.get("caption")
-            if not object_key or not caption:
+            location = f"{path}:{line_number}"
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Invalid spectra caption JSON at {location}: {exc.msg}") from exc
+            if not isinstance(rec, dict):
+                raise ValueError(f"Expected a spectra caption object at {location}")
+            output = rec.get("output")
+            if output is None:
                 n_missing += 1
                 continue
-            rows.append({"wiki_entity_id": object_key, "caption": caption})
+            if not isinstance(output, dict):
+                raise ValueError(f"Expected an output object at {location}")
+            object_key = rec.get("object_key")
+            caption = output.get("caption")
+            if output.get("is_insufficient") or caption == "INSUFFICIENT_SPECTRAL_DATA":
+                n_insufficient += 1
+                continue
+            if not isinstance(object_key, str) or not object_key.strip() or caption is None:
+                n_missing += 1
+                continue
+            if not isinstance(caption, str):
+                raise ValueError(f"Expected a caption string at {location}")
+            object_key, caption = object_key.strip(), caption.strip()
+            if not caption:
+                n_missing += 1
+                continue
+            if caption == "INSUFFICIENT_SPECTRAL_DATA":
+                n_insufficient += 1
+                continue
+            if object_key in captions:
+                if captions[object_key] != caption:
+                    raise ValueError(f"Conflicting captions for {object_key!r} at {location}")
+                n_duplicates += 1
+                continue
+            captions[object_key] = caption
 
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(captions.items(), columns=["wiki_entity_id", "caption"])
     logger.info(
-        f"Loaded {len(df)} usable Gemini spectra captions from {filename} "
+        f"Loaded {len(df)} usable Gemini spectra captions from {path} "
         f"({n_insufficient} marked is_insufficient, {n_missing} missing object_key/caption, "
-        "both skipped)."
+        f"{n_duplicates} identical duplicates skipped)."
     )
     return df
 

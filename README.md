@@ -10,7 +10,6 @@ something something fine-tune on Qwen 3.5 9B with AION encoder for spectra and i
 
 The data creation and training pipeline requires a huggingface account to agree and access these repositories:
 
-- https://huggingface.co/datasets/gapatron/legacy_survey_south_images_captions
 - https://huggingface.co/polymathic-ai/aion-base
 - https://huggingface.co/Qwen/Qwen3.5-9B
 
@@ -19,6 +18,12 @@ The pipeline also requires a huggingface token. You can obtain this by following
 ```
 hf auth login
 ```
+
+Additionally, we have prepared code for you to either generate captions yourself or utilize our existing repositories for each modality.
+
+- https://huggingface.co/datasets/gapatron/legacy_survey_south_images_captions
+- link to lcs
+- link to spectra
 
 ### 0. Setting up dev environment
 
@@ -40,7 +45,28 @@ To check access, running this command will inform you of missing access/permissi
 make check-access
 ```
 
-### 1. Set up data
+### 1. Captioning data
+First, we need to obtain the captions for all the datapoints used to train and validate the model. This can be done by either using a Gemini key or by using our existing repository as explained above.
+
+If moving forward with generating independent captions via Gemini, ensure `GEMINI_API_KEY` is set in `.env` and run the following to generate all captions for the spectra data:
+
+```
+make spectra-captions ARGS="--limit 0"
+```
+
+For images:
+
+```
+aaa
+```
+
+For light curves:
+
+```
+aaa
+```
+
+### 2. Set up data
 
 Create the master `manifest.parquet` dataset for all modalities and delegate the train/val split via:
 
@@ -54,7 +80,7 @@ Then, create the master `captions.parquet` dataset for all modalities:
 make captions
 ```
 
-### 2. Encode the modalities
+### 3. Encode the modalities
 
 Retrieve encoded outputs of the data by inputting into their respective encoders -- spectra + images into AION/lightcurves into ATCAT:
 
@@ -63,7 +89,7 @@ make cache
 ```
 
 
-### 3. Train the fusion stack
+### 4. Train the fusion stack
 
 Freeze the model, and train the fusion stack by running:
 
@@ -77,7 +103,7 @@ After this completes, check the fusion stack training by performing 3 tests on e
 make eval CKPT=outputs/checkpoints/stage1/best
 ```
 
-### 4. Additionally train the LoRA adapters
+### 5. Additionally train the LoRA adapters
 
 The weights are still frozen, and the fusion stack is trained once more but with the addition of the LoRA adapters by running:
 
@@ -91,7 +117,7 @@ After this stage completes, the same check as step 3. can be performed by runnin
 make eval CKPT=outputs/checkpoints/stage2/best
 ```
 
-### 5. Evaluating the model
+### 6. Evaluating the model
 
 something something test set from 3 modalities:
 
