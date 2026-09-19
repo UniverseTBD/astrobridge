@@ -1,0 +1,12 @@
+captioning:
+  model: gemini-3.5-flash-lite
+  strategy: combined_v2
+  limit: 10
+  thinking_level: low
+  thinking_summaries: auto
+  output_file: outputs/captions/spectra/captions.jsonl
+  metadata_dir: null
+  save_plots: false
+
+crossmatch:
+  radius_arcsec: ${join.fallback_radius_arcsec}

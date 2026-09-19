@@ -71,9 +71,10 @@ def main() -> None:
     # the mapping from the same spectra_ds row (both columns confirmed present on AstroBridge-Data).
     wiki_to_object_id = spectra_ds.dropna(subset=["wiki_entity_id"]).set_index("wiki_entity_id")["object_id"].to_dict()
     gemini_captions_df = load_gemini_spectra_captions(
-        cfg.sources.spectra_captions.hf_path,
-        cfg.sources.spectra_captions.filename,
+        cfg.sources.spectra_captions.get("hf_path"),
+        cfg.sources.spectra_captions.get("filename"),
         revision=cfg.sources.spectra_captions.get("revision"),
+        local_path=cfg.sources.spectra_captions.get("local_path"),
     )
     n_gemini_unmatched_wiki_id = 0
     spectra_gemini_caption_by_object: dict[str, str] = {}
@@ -255,6 +256,7 @@ def main() -> None:
         "spectra_caption_match_rate": spectra_caption_match_rate,
         "n_gemini_captions_total": len(gemini_captions_df),
         "n_gemini_unmatched_wiki_id": n_gemini_unmatched_wiki_id,
+        "spectra_captions_source": dict(cfg.sources.spectra_captions),
         "n_lightcurve_available": n_lightcurve_available,
         "n_lightcurve_captions_kept": n_lightcurve_kept,
         "n_objects_with_no_usable_text": n_no_usable_text,
