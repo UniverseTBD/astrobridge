@@ -12,7 +12,7 @@ Three caption sources, kept deliberately separate:
     same asymmetry the image side already has (not every has_image object has a caption_fused
     match either). No fallback to mention_summary decomposition for the rest.
   - image: gapatron's own pre-vetted caption field, `caption_fused` unless
-    configs/data.yaml's `sources.image.caption_field` says otherwise (data/image_dataset.py) —
+    configs/data.yaml's `sources.image_captions.caption_field` says otherwise (data/image_dataset.py) —
     same reasoning as spectra above: pre-vetted, modality-restricted, preferred over decomposing
     text ourselves. Looked up by the image source's own id (`object_id_legacy` on the manifest
     row), since joint-tier rows are keyed by the spectra side's object_id instead.
@@ -85,16 +85,20 @@ def main() -> None:
             continue
         spectra_gemini_caption_by_object[oid] = grow["caption"]
 
+    # `sources.image` is pixel/flux only (gapatron/legacy_survey_south_images_captions) —
+    # captions live in the separate `sources.image_captions` block
+    # (https://huggingface.co/datasets/gapatron/astrobridge-image-captions). `.get(...)` falls
+    # back to the old combined block for any config from before the split.
+    image_source = cfg.sources.get("image_captions", cfg.sources.image)
     image_captions_df = load_image_captions_table(
-        cfg.sources.image.hf_path,
-        revision=cfg.sources.image.get("revision"),
-        caption_field=cfg.sources.image.get("caption_field", "caption_fused"),
-        surveys=list(cfg.sources.image.get("surveys") or []) or None,
+        image_source.hf_path,
+        revision=image_source.get("revision"),
+        caption_field=image_source.get("caption_field", "caption_fused"),
+        surveys=list(image_source.get("surveys") or []) or None,
     )
     # load_image_captions_table normalises whichever caption_field was selected to the column
-    # name `caption_blind` (see data/image_dataset.py), so the lookup here does not change when
-    # the stage does. train-v2 names that column `caption` instead — do not "fix" this to match.
-    image_caption_by_object = image_captions_df.set_index("object_id")["caption_blind"].to_dict()
+    # name `caption` (see data/image_dataset.py).
+    image_caption_by_object = image_captions_df.set_index("object_id")["caption"].to_dict()
 
     # Transients ship their own caption, used RAW here (no keyword veto — see module docstring
     # and RETRAIN_SKETCH.md B3). It is not pre-vetted like caption_fused / the Gemini captions,
@@ -224,12 +228,12 @@ def main() -> None:
     if image_caption_match_rate is not None and image_caption_match_rate < 0.5:
         logger.warning(
             f"Only {image_caption_match_rate:.1%} of image-available objects "
-            f"({n_image_from_gapatron}/{n_image_available}) found a caption match. Captions and "
-            "flux now come from the same rows of the same dataset "
-            f"({cfg.sources.image.hf_path}), so this should be ~100% — anything less means the "
-            "manifest's object_id_legacy has drifted from the image dataset (a stale manifest "
-            "against a newer dataset revision), or rows were dropped for having no caption text "
-            f"in {cfg.sources.image.get('caption_field', 'caption_fused')!r}."
+            f"({n_image_from_gapatron}/{n_image_available}) found a caption match. Flux comes from "
+            f"{cfg.sources.image.hf_path!r}, captions from {image_source.hf_path!r} — same object "
+            "ids across the two, so this should be ~100% — anything less means the manifest's "
+            "object_id_legacy has drifted from one of the two datasets (a stale manifest against a "
+            "newer dataset revision), or rows were dropped for having no caption text in "
+            f"{image_source.get('caption_field', 'caption_fused')!r}."
         )
 
     spectra_caption_match_rate = n_spectra_from_gemini / n_spectra_available if n_spectra_available else None

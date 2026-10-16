@@ -21,7 +21,7 @@ hf auth login
 
 Additionally, we have prepared code for you to either generate captions yourself or utilize our existing repositories for each modality.
 
-- https://huggingface.co/datasets/gapatron/legacy_survey_south_images_captions
+- https://huggingface.co/datasets/gapatron/astrobridge-image-captions
 - link to lcs
 - link to spectra
 
@@ -36,7 +36,7 @@ uv pip install -e ".[dev]"
 You can confirm the environment works by running the tests:
 
 ```
-make tests
+make test
 ```
 
 To check access, running this command will inform you of missing access/permissions before running anything else:
