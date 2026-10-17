@@ -14,7 +14,7 @@ It bridges frozen domain-specific foundation encoders into a frozen/LoRA-adapted
 ## Published Artifacts on Hugging Face
 
 ### Trained Model
-- **AstroBridge (Paper Release)**: [`UniverseTBD/astrobridge-model-v8`](https://huggingface.co/UniverseTBD/astrobridge-model-v8)
+- **AstroBridge (Paper Release)**: [`UniverseTBD/AstroBridge`](https://huggingface.co/UniverseTBD/AstroBridge)
 
 ### Upstream Encoders & Base LLM
 - **AION Base**: [`polymathic-ai/aion-base`](https://huggingface.co/polymathic-ai/aion-base) *(open access, not gated)*

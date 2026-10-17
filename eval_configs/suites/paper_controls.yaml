@@ -18,8 +18,8 @@ models:
   # --- AstroBridge ---
   - id: astrobridge
     responder_type: astrobridge
-    name: "AstroBridge-v8"
-    astrobridge_id: UniverseTBD/astrobridge-model-v8
+    name: "AstroBridge"
+    astrobridge_id: UniverseTBD/AstroBridge
     batch_size: 128
 
   # --- Qwen-3.5-9B Controls ---
