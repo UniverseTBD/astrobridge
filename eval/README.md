@@ -29,7 +29,7 @@ instead, which is what makes `from eval.backend import ...` resolve).
 
 ### Lightcurve — SN typing (`eval/runners/run_lightcurve_eval.py`)
 
-Real, held-out benchmark: `BuildNg/astrobridge-yse-test-dataset-v2`, confirmed 266 objects, zero
+Real, held-out benchmark: `UniverseTBD/AstroBridge-Data` (`evals/lightcurves/yse/`), confirmed 266 objects, zero
 `object_id` overlap with the training set. Ground truth: `class_label` ∈ `{SN Ia, SN II, SN Ibc}`
 (confirmed imbalanced: 180/71/15).
 
@@ -97,11 +97,11 @@ uv run python -m eval.runners.score_image_eval_debiased --in outputs/eval/raw_ge
 
 Reports the crowd-vote-fraction soft score (see "Crowd-vote soft scoring" below) for both sides.
 
-### Spectra — not built yet
+### Spectra — see `src/evals/` and `eval_scripts/`
 
-Left as an obvious extension point: a new `eval/datasets/spectra_<source>.py` +
-`eval/runners/run_spectra_eval.py`, following the same shape as the two tracks above. Nothing
-else in this folder needs to change to add it.
+The full spectra evaluation suite (`source`, `subclass`, `distance`, and `emission_lines` on the
+900-object benchmark in `UniverseTBD/AstroBridge-Data` under `evals/spectra/benchmarks/`) lives in
+`src/evals/`, `eval_configs/`, and `eval_scripts/run_paper_captions.py` (`make eval-spectra`).
 
 ## Choosing a compute backend
 

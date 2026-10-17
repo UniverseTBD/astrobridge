@@ -24,7 +24,7 @@ It bridges frozen domain-specific foundation encoders into a frozen/LoRA-adapted
 ### Training & Evaluation Datasets
 All AstroBridge training observations, pre-generated captions, held-out spectra/light-curve benchmarks, and reference evaluation outputs are consolidated in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data):
 - **Spectra Observations & Gemini Captions**: `observations/spectra/spectra.parquet` & `captions/spectra/spectra_captions.jsonl`
-- **Galaxy Image Observations & Fused Captions**: `observations/images/legacy_south_all_images.parquet` & `captions/images/train-*.parquet`
+- **Galaxy Image Observations & Fused Captions**: `observations/images/legacy_south_all_images.parquet` & `captions/images/part-*.parquet`
 - **ZTF BTS Supernova Light Curves & Captions**: `observations/lightcurves/part-*.parquet`
 - **Held-out Spectra Benchmark, Model Captions & Frontier Judge Results**: `evals/spectra/{benchmarks,captions,results}/`
 - **Held-out YSE Light Curve Benchmark**: `evals/lightcurves/yse/part-*.parquet`
@@ -87,7 +87,7 @@ make lightcurve-captions ARGS="--dry-run --limit 5"
 Outputs JSONL ledgers and consolidated parquet files to `outputs/lightcurve_captions/`.
 
 ### Image Captions
-Pre-generated fused image captions (`caption_fused`) are hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `captions/images/train-*.parquet`.
+Pre-generated fused image captions (`caption_fused`) are hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `captions/images/part-*.parquet`.
 
 ---
 
@@ -169,9 +169,9 @@ make infer \
 ## 3. Replicating Paper Evaluations
 
 ### 3.1 Spectra Evaluation Suite (Table 1a)
-Evaluates AstroBridge against vision and text baseline LLMs on the **held-out spectra test benchmark** hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `evals/spectra/benchmarks/` (`source_class.parquet`, `subclass.parquet`, `redshift.parquet`, and `emission_lines.parquet`, automatically downloaded to `data/benchmarks/` on first run) across 4 astrophysical tasks (`source`, `subclass`, `distance`, `emission_lines`) configured in [`eval_configs/suites/paper_controls.yaml`](eval_configs/suites/paper_controls.yaml):
+Evaluates AstroBridge against vision and text baseline LLMs on the **held-out spectra test benchmark** hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `evals/spectra/benchmarks/` (`all.parquet`, `source.parquet`, `subclass.parquet`, `distance.parquet`, and `emission_lines.parquet`, automatically downloaded to `data/benchmarks/` on first run) across 4 astrophysical tasks (`source`, `subclass`, `distance`, `emission_lines`) configured in [`eval_configs/suites/paper_controls.yaml`](eval_configs/suites/paper_controls.yaml):
 - **Phase 1 (`--phase 1`)**: Generates or pulls cached model captions (`evals/spectra/captions/*.jsonl` -> `eval_results/cached_captions/*.jsonl`) for the held-out spectra test objects.
-- **Phase 2 (`--phase 2`)**: Uses a frontier judge (`gemini-3.8-flash` via `GEMINI_API_KEY`) to extract structured predictions from captions and computes accuracy, macro F1, redshift/distance error metrics, and 1,000-iteration bootstrap 95% confidence intervals (reference results hosted in `evals/spectra/results/`).
+- **Phase 2 (`--phase 2`)**: Uses a frontier judge (`gemini-4-argon` via `GEMINI_API_KEY`) to extract structured predictions from captions and computes accuracy, emission-line Jaccard index, and 10,000-iteration paired bootstrap 95% confidence intervals (reference results hosted in `evals/spectra/results/`).
 
 ```bash
 # Run both Phase 1 (caption generation/pull) and Phase 2 (frontier judge + metrics):
@@ -198,15 +198,16 @@ Evaluates supernova classification (`SN Ia`, `SN II`, `SN Ibc`) on the held-out 
 
 2. **Run generative classification routes** (Table 1b):
    ```bash
-   # AstroBridge (direct classification):
-   make eval-lc-generate ROUTE=astrobridge_v8_direct
-
    # AstroBridge (free-form caption prefix -> classification):
    make eval-lc-generate ROUTE=astrobridge_v8_prefix
 
-   # Base Qwen 3.5 9B controls (rendered plot or raw numerical table):
-   make eval-lc-generate ROUTE=qwen_base_plot_direct
-   make eval-lc-generate ROUTE=qwen_base_table_direct
+   # Control baselines (rendered chart or numerical table):
+   make eval-lc-generate ROUTE=qwen35_chart
+   make eval-lc-generate ROUTE=qwen35_table
+   make eval-lc-generate ROUTE=gemma4_12b_chart
+   make eval-lc-generate ROUTE=gemma4_12b_table
+   make eval-lc-generate ROUTE=gemma4_31b_chart
+   make eval-lc-generate ROUTE=gemma4_31b_table
    ```
    *Output*: `outputs/benchmark_v8/generations/<route>.jsonl`.
 

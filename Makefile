@@ -76,7 +76,7 @@ eval-lc-prep:
 	python scripts/10_prepare_benchmark.py $(ARGS)
 
 eval-lc-generate:
-	@test -n "$(ROUTE)" || (echo "Usage: make eval-lc-generate ROUTE=astrobridge_v8_direct [ARGS=...]" && exit 1)
+	@test -n "$(ROUTE)" || (echo "Usage: make eval-lc-generate ROUTE=astrobridge_v8_prefix [ARGS=...]" && exit 1)
 	python scripts/11_run_generative_route.py --route $(ROUTE) $(ARGS)
 
 eval-lc-score:
