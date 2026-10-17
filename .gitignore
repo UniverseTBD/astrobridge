@@ -209,3 +209,6 @@ __marimo__/
 
 scripts/*.json
 scripts/*.png
+
+data
+eval_results

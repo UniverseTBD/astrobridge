@@ -495,7 +495,7 @@ def run_model_comparisons(
     eval_dir: Path,
     baseline_id: str,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
-    comp_summary = {"baseline_model": baseline_id, "comparisons": {}}
+    comp_summary = {"target_model": baseline_id, "comparisons": {}}
     table_rows = []
 
     for mid in model_ids:
@@ -504,8 +504,8 @@ def run_model_comparisons(
         comp_summary["comparisons"][mid] = {}
 
         for t in task_names:
-            base_file = eval_dir / baseline_id / t / "predictions.jsonl"
-            treat_file = eval_dir / mid / t / "predictions.jsonl"
+            base_file = eval_dir / mid / t / "predictions.jsonl"
+            treat_file = eval_dir / baseline_id / t / "predictions.jsonl"
             if not base_file.is_file() or not treat_file.is_file():
                 continue
 
@@ -513,8 +513,8 @@ def run_model_comparisons(
             overall = paired_bootstrap_test(base_file, treat_file, metric_name=metric)
             comp_summary["comparisons"][mid][t] = overall
             table_rows.append({
-                "model_id": mid,
-                "baseline_model": baseline_id,
+                "model_id": baseline_id,
+                "baseline_model": mid,
                 "task": t,
                 "regime": "all",
                 "metric": metric,
@@ -526,8 +526,8 @@ def run_model_comparisons(
                 comp_summary["comparisons"][mid]["emission_lines_regimes"] = by_reg
                 for reg, reg_res in by_reg.items():
                     table_rows.append({
-                        "model_id": mid,
-                        "baseline_model": baseline_id,
+                        "model_id": baseline_id,
+                        "baseline_model": mid,
                         "task": t,
                         "regime": reg,
                         "metric": "jaccard",
@@ -541,15 +541,16 @@ def format_comparisons(table_rows: List[Dict[str, Any]], baseline_id: str) -> st
     if not table_rows:
         return ""
 
+    target_col = f"{baseline_id} (95% CI)"
     lines = [
         f"\n{'=' * 110}",
-        f"Statistical Significance Comparison vs Baseline: [{baseline_id}]",
+        f"Statistical Significance of [{baseline_id}] vs Baselines",
         f"{'=' * 110}",
-        f"{'Model / Task':<32} {'Metric':<10} {'Baseline (95% CI)':<22} {'Model (95% CI)':<22} {'Delta (95% CI)':<22} {'p-value':<8}",
+        f"{'Baseline / Task':<32} {'Metric':<10} {'Baseline (95% CI)':<22} {target_col:<22} {'Delta (95% CI)':<22} {'p-value':<8}",
         f"{'-' * 32} {'-' * 10} {'-' * 22} {'-' * 22} {'-' * 22} {'-' * 8}",
     ]
     for r in table_rows:
-        tag = f"{r['model_id']}:{r['task']}" if r["regime"] == "all" else f"  └ regime:{r['regime']}"
+        tag = f"{r['baseline_model']}:{r['task']}" if r["regime"] == "all" else f"  └ regime:{r['regime']}"
         b_str = f"{r['score_baseline']:.4f} [{r['ci_baseline'][0]:.3f}, {r['ci_baseline'][1]:.3f}]"
         m_str = f"{r['score_treatment']:.4f} [{r['ci_treatment'][0]:.3f}, {r['ci_treatment'][1]:.3f}]"
         d_str = f"{r['delta_observed']:+.4f} [{r['ci_95'][0]:+.3f}, {r['ci_95'][1]:+.3f}]"
