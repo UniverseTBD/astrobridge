@@ -301,7 +301,7 @@ def test_generated_captions_reach_training_parquet(
     spec.loader.exec_module(module)
     monkeypatch.setattr(module, "load_config", lambda *args: cfg)
     monkeypatch.setattr(module, "load_spectra_table", lambda *args, **kwargs: observations)
-    monkeypatch.setattr(module, "load_image_captions_table", lambda *args, **kwargs: pd.DataFrame(columns=["object_id", "caption_blind"]))
+    monkeypatch.setattr(module, "load_image_captions_table", lambda *args, **kwargs: pd.DataFrame(columns=["object_id", "caption"]))
     module.main()
     training = pd.read_parquet(cfg.captions.parquet)
     assert set(training["object_id"]) == {"observation_a", "observation_b"}

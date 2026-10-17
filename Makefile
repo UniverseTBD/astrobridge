@@ -21,7 +21,7 @@ captions:
 	python scripts/01_generate_captions.py $(if $(SPECTRA_CAPTIONS),"sources.spectra_captions.local_path=$(SPECTRA_CAPTIONS)")
 
 spectra-captions:
-	uv run --no-project --python 3.13 scripts/spectra/caption_spectra.py $(ARGS)
+	python scripts/spectra/caption_spectra.py $(ARGS)
 
 cache:
 	python scripts/02_cache_embeddings.py
