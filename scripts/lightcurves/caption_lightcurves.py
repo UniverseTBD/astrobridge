@@ -460,7 +460,7 @@ def prepare_items(args: argparse.Namespace) -> list[PreparedCaption]:
 
 
 def _load_token(credentials_env_file: Path | None) -> str:
-    token = os.environ.get("GEMINI_API_TOKEN", "").strip()
+    token = os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_TOKEN", "").strip()
     if token:
         return token
     if credentials_env_file is not None:
@@ -468,10 +468,10 @@ def _load_token(credentials_env_file: Path | None) -> str:
             if "=" not in line or line.lstrip().startswith("#"):
                 continue
             name, value = line.split("=", 1)
-            if name.strip() == "GEMINI_API_TOKEN" and value.strip().strip("\"'"):
+            if name.strip() in ("GEMINI_API_KEY", "GEMINI_API_TOKEN") and value.strip().strip("\"'"):
                 return value.strip().strip("\"'")
     raise RuntimeError(
-        "GEMINI_API_TOKEN is not set and was not found in --credentials-env-file"
+        "GEMINI_API_KEY (or GEMINI_API_TOKEN) is not set and was not found in --credentials-env-file"
     )
 
 

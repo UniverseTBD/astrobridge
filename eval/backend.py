@@ -258,9 +258,8 @@ app = modal.App("astrobridge-eval-backend")
 
 hf_cache_volume = modal.Volume.from_name("astrobridge-hf-cache", create_if_missing=True)
 
-# Real, confirmed-live published repo. Bumped to v5 (image + spectra + lightcurve, 64-query
-# Q-Former, chat-template prompting) from the earlier v3_qwen default.
-DEFAULT_MODEL_REPO_ID = "UniverseTBD/astrobridge-model-v7"
+# Real, confirmed-live published repo. Bumped to v8 from the earlier v7 default.
+DEFAULT_MODEL_REPO_ID = "UniverseTBD/astrobridge-model-v8"
 
 # A100, not L4 — bumped per explicit request for faster real eval runs.
 # Pinned to the 40GB A100 explicitly: bare "A100" is Modal's 40GB variant anyway, but naming it

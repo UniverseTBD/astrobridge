@@ -232,7 +232,7 @@ def main() -> None:
     parser.add_argument("--model", default=DEFAULT_EXTRACTOR_MODEL)
     parser.add_argument("--max-output-tokens", type=int, default=DEFAULT_MAX_OUTPUT_TOKENS)
     parser.add_argument("--credentials-env-file")
-    parser.add_argument("--api-key-env", default="GEMINI_API_TOKEN")
+    parser.add_argument("--api-key-env", default="GEMINI_API_KEY")
     parser.add_argument("--input-price-per-million-usd", type=float)
     parser.add_argument("--output-price-per-million-usd", type=float)
     parser.add_argument("--hard-usd-stop", type=float)
@@ -399,6 +399,8 @@ def main() -> None:
         from dotenv import load_dotenv
         load_dotenv(args.credentials_env_file, override=False)
     api_key = os.environ.get(args.api_key_env)
+    if not api_key and args.api_key_env == "GEMINI_API_KEY":
+        api_key = os.environ.get("GEMINI_API_TOKEN")
     if not api_key:
         raise ValueError(f"API key environment variable {args.api_key_env!r} is not set")
 
