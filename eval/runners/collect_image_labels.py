@@ -141,7 +141,7 @@ def _collect_digit_code(sampled_rgb, sampled_bands, args, cfg, question, base_ma
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-id", default="UniverseTBD/astrobridge-model-v5")
+    parser.add_argument("--repo-id", default="UniverseTBD/AstroBridge")
     parser.add_argument("--backend", choices=["local", "modal"], default="local")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--n", type=int, default=150, help="total sample size across all 10 classes")

@@ -57,7 +57,8 @@ from captioner.data.transients_dataset import (
     prepare_lightcurve_arrays,
 )
 
-YSE_HF_PATH = "BuildNg/astrobridge-yse-test-dataset-v2"
+YSE_HF_PATH = "UniverseTBD/AstroBridge-Data"
+YSE_DIR_PREFIX = "evals/lightcurves/yse/"
 
 # Real, confirmed values of the `class_label` column — see module docstring. Order matters for
 # eval/metrics/caption_to_label.py's tie-break behaviour; kept in sync with that file's
@@ -104,7 +105,7 @@ def load_lightcurve_table(
     (not imported) only because that function hardcodes the log message "transients from
     {hf_path}"; the underlying read/dedupe/invariant-check logic is reused directly, unchanged.
     """
-    df = _download_and_read(hf_path, revision, cache_dir, LIGHTCURVE_COLUMNS)
+    df = _download_and_read(hf_path, revision, cache_dir, LIGHTCURVE_COLUMNS, prefix=YSE_DIR_PREFIX)
     df = _deduplicate_by_object_id(df, "YSE eval lightcurve table")
     _assert_accepted_counts(df)
     return df
@@ -117,7 +118,7 @@ def load_host_image_table(
     (`image_flux`, `image_bands`, `image_modality`) — genuinely new, see module docstring for why
     no existing loader covers this.
     """
-    df = _download_and_read(hf_path, revision, cache_dir, HOST_IMAGE_COLUMNS)
+    df = _download_and_read(hf_path, revision, cache_dir, HOST_IMAGE_COLUMNS, prefix=YSE_DIR_PREFIX)
     return _deduplicate_by_object_id(df, "YSE eval host-image table")
 
 

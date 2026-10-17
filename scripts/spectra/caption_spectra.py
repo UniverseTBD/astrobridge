@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-# /// script
-# requires-python = ">=3.13"
-# dependencies = [
-#   "spectra-captioning @ git+https://github.com/ibrahimhabibeg/spectra-captioning.git@22c38c0c91aeaa1bcabe3c5e2fb06d82ae629a8f",
-#   "omegaconf>=2.3",
-# ]
-# ///
-"""Generate training captions using the pinned upstream spectra-captioning project."""
+"""Generate training captions using spectra-captioning strategies and Gemini."""
 from __future__ import annotations
 
 import argparse
@@ -15,8 +8,6 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-# uv runs this script in its own Python 3.13 environment. Only the lightweight
-# data helpers are imported from AstroBridge; the training package is not installed.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 

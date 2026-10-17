@@ -192,7 +192,7 @@ def run_phase1_captions(
 ) -> List[str]:
     captions_dir.mkdir(parents=True, exist_ok=True)
     hf_repo = args.hf_repo or suite_config.get("hf_repo", DEFAULT_HF_DATA_REPO)
-    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/captions")
+    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/spectra/captions")
 
     executed = []
     for model in models_to_run:
@@ -495,7 +495,7 @@ def run_model_comparisons(
     eval_dir: Path,
     baseline_id: str,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
-    comp_summary = {"baseline_model": baseline_id, "comparisons": {}}
+    comp_summary = {"target_model": baseline_id, "comparisons": {}}
     table_rows = []
 
     for mid in model_ids:
@@ -504,8 +504,8 @@ def run_model_comparisons(
         comp_summary["comparisons"][mid] = {}
 
         for t in task_names:
-            base_file = eval_dir / baseline_id / t / "predictions.jsonl"
-            treat_file = eval_dir / mid / t / "predictions.jsonl"
+            base_file = eval_dir / mid / t / "predictions.jsonl"
+            treat_file = eval_dir / baseline_id / t / "predictions.jsonl"
             if not base_file.is_file() or not treat_file.is_file():
                 continue
 
@@ -513,8 +513,8 @@ def run_model_comparisons(
             overall = paired_bootstrap_test(base_file, treat_file, metric_name=metric)
             comp_summary["comparisons"][mid][t] = overall
             table_rows.append({
-                "model_id": mid,
-                "baseline_model": baseline_id,
+                "model_id": baseline_id,
+                "baseline_model": mid,
                 "task": t,
                 "regime": "all",
                 "metric": metric,
@@ -526,8 +526,8 @@ def run_model_comparisons(
                 comp_summary["comparisons"][mid]["emission_lines_regimes"] = by_reg
                 for reg, reg_res in by_reg.items():
                     table_rows.append({
-                        "model_id": mid,
-                        "baseline_model": baseline_id,
+                        "model_id": baseline_id,
+                        "baseline_model": mid,
                         "task": t,
                         "regime": reg,
                         "metric": "jaccard",
@@ -541,15 +541,16 @@ def format_comparisons(table_rows: List[Dict[str, Any]], baseline_id: str) -> st
     if not table_rows:
         return ""
 
+    target_col = f"{baseline_id} (95% CI)"
     lines = [
         f"\n{'=' * 110}",
-        f"Statistical Significance Comparison vs Baseline: [{baseline_id}]",
+        f"Statistical Significance of [{baseline_id}] vs Baselines",
         f"{'=' * 110}",
-        f"{'Model / Task':<32} {'Metric':<10} {'Baseline (95% CI)':<22} {'Model (95% CI)':<22} {'Delta (95% CI)':<22} {'p-value':<8}",
+        f"{'Baseline / Task':<32} {'Metric':<10} {'Baseline (95% CI)':<22} {target_col:<22} {'Delta (95% CI)':<22} {'p-value':<8}",
         f"{'-' * 32} {'-' * 10} {'-' * 22} {'-' * 22} {'-' * 22} {'-' * 8}",
     ]
     for r in table_rows:
-        tag = f"{r['model_id']}:{r['task']}" if r["regime"] == "all" else f"  └ regime:{r['regime']}"
+        tag = f"{r['baseline_model']}:{r['task']}" if r["regime"] == "all" else f"  └ regime:{r['regime']}"
         b_str = f"{r['score_baseline']:.4f} [{r['ci_baseline'][0]:.3f}, {r['ci_baseline'][1]:.3f}]"
         m_str = f"{r['score_treatment']:.4f} [{r['ci_treatment'][0]:.3f}, {r['ci_treatment'][1]:.3f}]"
         d_str = f"{r['delta_observed']:+.4f} [{r['ci_95'][0]:+.3f}, {r['ci_95'][1]:+.3f}]"
@@ -602,8 +603,8 @@ def run_phase2_evals(
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     hf_repo = args.hf_repo or suite_config.get("hf_repo", DEFAULT_HF_DATA_REPO)
-    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/captions")
-    hf_eval_subdir = args.hf_eval_subdir or suite_config.get("hf_eval_subdir", f"evals/frontier_evals/{suite_config.get('suite_name', 'suite')}")
+    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/spectra/captions")
+    hf_eval_subdir = args.hf_eval_subdir or suite_config.get("hf_eval_subdir", "evals/spectra/results")
 
     task_cfgs = resolve_task_configs(args.tasks or args.task, suite_config.get("tasks"))
     frontier_cfg = resolve_frontier_config(

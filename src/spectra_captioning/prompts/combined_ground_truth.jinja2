@@ -1,0 +1,83 @@
+You are an expert astrophysicist writing a caption for an astronomical spectrum. The caption will be used to train a multimodal AI model that aligns 1D spectral data with natural language descriptions.
+
+You are provided with two sources of information about this object:
+1. **The Spectral Plot (Primary)**: An image of the 1D spectrum.
+2. **Literature Quotes (Secondary)**: A list of quotes from scientific papers that reference this object.
+
+{% if redshift is not none %}
+The object is located at a **{{ redshift_description }}** distance. State this distance regime plainly in your caption.
+The plot includes labeled vertical dashed lines marking the expected observed positions of common rest-frame spectral features (redshifted by its distance). These include:
+- **Hydrogen Balmer series**: Hα, Hβ, Hγ, Hδ (and Lyα for high-z objects)
+- **Forbidden nebular emission**: [O II] λ3727, [O III] λλ4959,5007, [O I] λ6300, [N II] λ6583, [S II] λλ6716,6731
+- **High-ionization / UV lines**: C IV λ1549, C III] λ1909, Mg II λ2799, He II λ4686
+- **Stellar absorption features**: Ca II H & K, G-band, Mg I b, Na I D
+
+A labeled line appearing on the plot does NOT mean the feature is detected — only report features where you can see a clear signal above or below the continuum.
+{% else %}
+Redshift information is not available for this spectrum. Reference spectral lines are not overlaid.
+{% endif %}
+
+{% if class_phrase %}
+## OBJECT CLASSIFICATION (stated fact — do not hedge or re-derive)
+
+State plainly, near the beginning of the caption, the object's classification: **{{ class_phrase }}**{% if subclass_phrase %} and subclass: **{{ subclass_phrase }}**{% endif %}. You may weave these terms naturally into your prose, but they must be stated as established facts.
+{% endif %}
+
+{% if desi_lines is not none %}
+## MEASURED EMISSION LINES (source of truth — do not detect independently)
+
+{% if desi_lines %}
+The following emission lines have been measured in this spectrum with significant signal: {{ desi_lines | join(", ") }}. Select the most salient 2-3 of these to mention, describing their visual appearance in the plot (e.g. narrow/broad, relative strength) rather than re-deriving whether they exist. Do not mention any emission or absorption line outside this list, and do not imply other lines are present. Do not include the numeric SNR values in your caption. Use the SNR values only internally to determine relative strengths and qualitative descriptions (e.g. 'strong', 'faint').
+{% else %}
+No emission lines were measured with significant signal in this spectrum. State this plainly (e.g. "no significant emission lines are detected") rather than describing any specific line as present or absent.
+{% endif %}
+{% endif %}
+
+## THE ANALYSIS HIERARCHY
+
+The plot is the **ABSOLUTE GROUND TRUTH** for what is observable. The quotes are only to be used to enrich the description of features that are already visible in the plot.
+
+Follow this two-phase analysis before writing your caption:
+
+**Phase 1: Analyze the Plot (What is visible?)**
+- What is the continuum shape (blue, red, flat, breaks)?
+- Which emission or absorption lines are clearly visible? Are they broad or narrow?
+- What is the general signal quality?
+- Based *only* on the plot, what is the rough classification (e.g., star-forming galaxy, quasar, early-type galaxy)?
+
+**Phase 2: Filter and Enrich with Quotes (What details can we add?)**
+- Review the quotes and extract *only* quantitative details or precise classifications (e.g., equivalent widths, velocity dispersions, line ratios, specific AGN types like "Seyfert 1.5") that correspond to the features you identified in Phase 1.
+- **CRITICAL REJECTION**: Ignore ANY quotes that describe observations outside the wavelength range shown in the plot. Specifically, **REJECT** any information about:
+  - X-ray emission or absorption
+  - Radio, millimeter, or submillimeter observations (e.g., CO, HCN, megamasers)
+  - Far-infrared or mid-infrared features (e.g., silicate absorption, PAHs, [C II] 158 μm)
+- **CONFLICT RESOLUTION**: If a quote claims a feature is strong (e.g., "strong Hα"), but the plot shows no such feature, **TRUST THE PLOT** and do not mention it.
+
+## CRITICAL RULES
+
+1. **ONLY describe information that can be directly observed in the provided plot, enriched by relevant quotes.**
+2. **NEVER include any of the following, even if mentioned in the quotes:**
+   - Object names, catalog identifiers, or specific coordinates.
+   - Information from unobserved wavebands (X-ray, radio, far-IR/mid-IR).
+   - Morphological descriptions (size, shape, spiral arms, merger status).
+   - Distance or mass estimates beyond what is directly implied by the spectrum and redshift.
+   - The exact numeric redshift value (e.g., z=0.123), use qualitative distance descriptions instead.
+3. **Write in third person**, describing the spectrum directly (e.g., "The spectrum displays strong narrow emission lines...", "This early-type galaxy spectrum is characterized by..."). Do not say "the quotes state" or "the plot shows".
+4. **Do NOT mention the object by name.** Refer to it by its spectral nature (e.g., "this galaxy", "this quasar", "this spectrum").
+5. If the spectrum is completely flat, uncalibrated, corrupted by noise, or contains no usable spectral signal, output exactly: `INSUFFICIENT_SPECTRAL_DATA`
+
+## LITERATURE ENRICHMENT (qualitative only)
+
+{% if quotes %}
+Include at most two qualitative details from the quotes below — e.g. a more precise subtype/classification, a noted peculiarity, or descriptive context — and only if consistent with the classification, plot, or measured lines above. Do not include quantitative figures (equivalent widths, velocity dispersions, column densities, line ratios, flux or mass values) from the quotes, even if available. If more than two qualifying qualitative details exist, choose the two most specific and best supported.
+
+{% for quote in quotes %}
+- {{ quote }}
+{% endfor %}
+{% else %}
+No literature quotes are available for this object. Base your description solely on the plot and metadata.
+{% endif %}
+
+## YOUR CAPTION
+
+Write a concise, precise caption (2-4 sentences) that synthesizes the visual plot and the relevant, filtered quotes into a single cohesive description of the spectrum.

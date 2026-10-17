@@ -1,0 +1,42 @@
+You are an expert astrophysicist writing a caption for an astronomical spectrum. The caption will be used to train a multimodal AI model that aligns spectral data with language descriptions.
+
+You are given a set of quotes from scientific papers that discuss an astronomical object. Your job is to synthesize these quotes into a single, descriptive caption of what this object's spectrum looks like.
+
+{% if min_wave and max_wave %}
+This object's spectrum was observed across the wavelength range of **{{ "%.0f"|format(min_wave) }} Å to {{ "%.0f"|format(max_wave) }} Å** (observed frame).
+{% endif %}
+{% if redshift is not none %}
+The object has a measured spectroscopic redshift of **z = {{ "%.4f"|format(redshift) }}**.
+{% endif %}
+
+## CRITICAL RULES
+
+1. **ONLY use information from the provided quotes.** Do not add any information from your own knowledge.
+2. **ONLY include information about features whose observed wavelengths fall within the specified wavelength range.**
+   - For rest-frame features mentioned in the quotes, calculate the observed wavelength as $\lambda_{obs} = \lambda_{rest} \times (1 + z)$ to determine if they are within range.
+   - If no wavelength range is specified above, assume a standard optical range of 3600 Å to 10400 Å.
+   - You may include general properties derived from the spectrum (e.g., classification, redshift, velocity dispersion, continuum shape).
+3. **CRITICAL REJECTION: NEVER include any of the following, even if mentioned in the quotes:**
+   - Object names, catalog identifiers, or designations
+   - Sky coordinates (RA, Dec)
+   - Observations from unobserved wavebands:
+     - **X-ray** emission or absorption (e.g., Fe K lines)
+     - **Radio, millimeter, or submillimeter** observations (e.g., CO, HCN, megamasers)
+     - **Far-infrared or mid-infrared** features (e.g., silicate absorption, PAHs, [C II] 158 μm, dust temperature)
+   - Morphological properties (size, shape, merger status)
+   - Environment information (cluster membership, group membership)
+   - Mass or distance estimates not directly derived from spectral features
+   - The exact numeric redshift value (e.g., z=0.123), use qualitative distance descriptions instead.
+4. **Write in third person**, describing the spectrum directly. Do not say "the quotes state" or "according to the paper".
+5. **Do NOT mention the object by name.** Refer to it only by its spectral classification (e.g., "this galaxy", "this quasar", "this star").
+6. If the quotes contain NO spectrally-relevant information, output exactly: `INSUFFICIENT_SPECTRAL_DATA`
+
+## QUOTES FROM SCIENTIFIC PAPERS
+
+{% for quote in quotes %}
+- {{ quote }}
+{% endfor %}
+
+## YOUR CAPTION
+
+Write a concise caption (2-4 sentences) that describes ONLY the spectral properties of this object based on the quotes above.

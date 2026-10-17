@@ -21,9 +21,6 @@ dependencies = [
     "omegaconf>=2.3",
     "astropy>=6.0",
     "tqdm>=4.66",
-    "pillow>=10.0", # PIL.Image — the format Qwen's own AutoProcessor chat-template image
-    # content blocks expect (eval/backend.py's grz->RGB composite side).
-    # Not used by AION's pathway at all, only Qwen's native vision one.
     "torchvision>=0.17", # Confirmed real, not optional: Qwen3.5's AutoProcessor resolves to
     # Qwen3VLProcessor, a single class bundling BOTH image and video
     # handling — constructing it (AutoProcessor.from_pretrained(...))
@@ -49,7 +46,8 @@ dependencies = [
 dev = ["pytest>=8.0", "pytest-cov"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "."]
+include = ["captioner*", "evals*", "spectra_captioning*", "eval*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

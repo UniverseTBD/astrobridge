@@ -215,7 +215,6 @@ requires-dist = [
     { name = "onnxruntime", specifier = ">=1.17" },
     { name = "pandas", specifier = ">=2.2" },
     { name = "peft", specifier = ">=0.11" },
-    { name = "pillow", specifier = ">=10.0" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "polymathic-aion" },
     { name = "pyarrow", specifier = ">=15.0" },

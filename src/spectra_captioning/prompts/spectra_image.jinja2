@@ -1,0 +1,45 @@
+You are an expert astrophysicist writing a caption for an astronomical spectrum. The caption will be used to train a multimodal AI model that aligns 1D spectral data with natural language descriptions.
+
+You are given an image of a 1D optical/near-IR spectrum.
+{% if redshift is not none %}
+The object is located at a **{{ redshift_description }}** distance.
+The plot includes labeled vertical dashed lines marking the expected observed positions of common rest-frame spectral features (redshifted by its distance). These include:
+- **Hydrogen Balmer series**: Hα, Hβ, Hγ, Hδ (and Lyα for high-z objects)
+- **Forbidden nebular emission**: [O II] λ3727, [O III] λλ4959,5007, [O I] λ6300, [N II] λ6583, [S II] λλ6716,6731
+- **High-ionization / UV lines**: C IV λ1549, C III] λ1909, Mg II λ2799, He II λ4686
+- **Stellar absorption features**: Ca II H & K, G-band, Mg I b, Na I D
+
+Use these reference lines to identify which features are actually present (in emission or absorption) in the spectrum. A labeled line appearing on the plot does NOT mean the feature is detected — only report features where you can see a clear signal above or below the continuum.
+{% else %}
+Redshift information is not available for this spectrum. Reference spectral lines are not overlaid.
+{% endif %}
+
+## WHAT TO EXAMINE
+
+Systematically analyze the following aspects of the spectrum before writing your caption:
+1. **Continuum shape**: Is it blue (rising toward shorter wavelengths), red (rising toward longer wavelengths), or flat? Are there breaks such as the 4000 Å break or Balmer break?
+2. **Emission lines**: Which labeled lines show clear emission peaks? Are they narrow (unresolved or marginally resolved) or broad (FWHM ≳ 1000 km/s)? What are their approximate relative strengths?
+3. **Absorption lines**: Which labeled lines show clear absorption troughs? Are the stellar absorption features (Ca II H & K, G-band, Mg I b, Na I D) prominent?
+4. **Signal quality**: Is the spectrum high signal-to-noise, or is it noisy? Are there obvious artifacts or calibration issues?
+
+## CRITICAL RULES
+
+1. **ONLY describe information that can be directly observed or deduced from the provided spectral plot.**
+   - Spectral classification (e.g., star-forming galaxy, starburst, Seyfert AGN, quasar/QSO, quiescent / early-type galaxy, stellar type).
+   - Continuum shape, slope, and continuum breaks (e.g., 4000 Å break, Balmer break).
+   - Emission lines and their properties (prominence, relative strengths, narrow vs. broad profiles).
+   - Absorption lines and their properties.
+   - Signal quality and noise characteristics if relevant.
+2. **NEVER include any of the following:**
+   - Object names, catalog identifiers, or specific coordinates.
+   - Information from unobserved wavebands (X-ray, radio, far-IR).
+   - Morphological descriptions (size, shape, spiral arms, merger status).
+   - Distance or mass estimates beyond what is directly implied by the spectrum and redshift.
+   - The exact numeric redshift value (e.g., z=0.123), use qualitative distance descriptions instead.
+3. **Write in third person**, describing the spectrum directly (e.g., "The spectrum displays strong narrow emission lines...", "This early-type galaxy spectrum is characterized by...").
+4. **Do NOT mention the object by name.** Refer to it by its spectral nature (e.g., "this galaxy", "this quasar", "this spectrum").
+5. If the spectrum is completely flat, uncalibrated, corrupted by noise, or contains no usable spectral signal, output exactly: `INSUFFICIENT_SPECTRAL_DATA`
+
+## YOUR CAPTION
+
+Write a concise, precise caption (2-4 sentences) that describes the key spectral features and classification of this object based strictly on the provided image and redshift.

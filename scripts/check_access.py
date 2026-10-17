@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Checks HF access to everything this pipeline needs — two datasets (one of them gated, with a
-specific file this build depends on) and two gated-or-not models — before you sink real time
+"""Checks HF access to everything this pipeline needs — datasets (including required parquet files)
+and upstream open-access models (AION, ATCAT, Qwen3.5-9B) — before you sink real time
 into `make manifest`/`make cache`/`make stage1`. Metadata-only calls, no downloads.
 
 Run this first on any machine/account that hasn't used this project before: `make check-access`.
@@ -48,22 +48,27 @@ def main() -> None:
     )
 
     def _check_image_files():
+        from captioner.data.image_dataset import FLUX_PARQUET_FILENAME, IMAGE_CAPTIONS_DIR_PREFIX
+
         files = api.list_repo_files(cfg.sources.image.hf_path, repo_type="dataset")
-        if "legacy_south_all_images.parquet" not in files:
+        if FLUX_PARQUET_FILENAME not in files and "legacy_south_all_images.parquet" not in files:
             raise FileNotFoundError(
-                "legacy_south_all_images.parquet not found in repo file listing — "
+                f"{FLUX_PARQUET_FILENAME} not found in repo file listing — "
                 "the image pixel-data pipeline (02_cache_embeddings.py) depends on this exact "
                 "filename; check configs/data.yaml and data/image_dataset.py:FLUX_PARQUET_FILENAME."
             )
         cap_files = api.list_repo_files(cfg.sources.image_captions.hf_path, repo_type="dataset")
-        if not any(f.startswith("data/") and f.endswith(".parquet") for f in cap_files):
+        if not any(
+            (f.startswith(IMAGE_CAPTIONS_DIR_PREFIX) or f.startswith("data/")) and f.endswith(".parquet")
+            for f in cap_files
+        ):
             raise FileNotFoundError(
-                f"No data/*.parquet in {cfg.sources.image_captions.hf_path} — image-tier "
+                f"No {IMAGE_CAPTIONS_DIR_PREFIX}*.parquet in {cfg.sources.image_captions.hf_path} — image-tier "
                 "captions (caption_fused) depend on these."
             )
 
     results["image dataset (required files)"] = _check(
-        "legacy_south_all_images.parquet + image_captions data/*.parquet present in the repo listings",
+        f"{cfg.sources.image.hf_path} image observations + captions parquets present in repo listings",
         _check_image_files,
     )
 

@@ -44,7 +44,7 @@ DEFAULT_QUESTION = (
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-id", default="UniverseTBD/astrobridge-model-v5")
+    parser.add_argument("--repo-id", default="UniverseTBD/AstroBridge")
     parser.add_argument("--backend", choices=["local", "modal"], default="local")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--track", choices=["lightcurve_only", "lightcurve_plus_image"], default="lightcurve_only")

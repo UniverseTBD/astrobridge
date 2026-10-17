@@ -31,7 +31,8 @@ from pathlib import Path
 
 import pandas as pd
 
-FLUX_PARQUET_FILENAME = "legacy_south_all_images.parquet"
+FLUX_PARQUET_FILENAME = "observations/images/legacy_south_all_images.parquet"
+IMAGE_CAPTIONS_DIR_PREFIX = "captions/images/"
 IMAGE_CAPTION_COLUMN = "caption_fused"
 
 
@@ -44,7 +45,7 @@ def load_image_captions_table(
 ) -> pd.DataFrame:
     """One row per object: `object_id`, `caption` (from `caption_fused`). Only these two columns
     are read from the parquet shards — the flux columns in the same file are ignored (the AION
-    pixel source stays `legacy_south_all_images.parquet`). scripts/01_generate_captions.py looks
+    pixel source stays `observations/images/legacy_south_all_images.parquet`). scripts/01_generate_captions.py looks
     captions up by object id; identity/coordinates for the manifest come from the flux parquet.
     A row with an empty `caption_fused` is dropped — nothing to caption the image tier with.
     """
@@ -53,14 +54,20 @@ def load_image_captions_table(
     import pyarrow.parquet as pq
     from huggingface_hub import hf_hub_download
 
+    all_files = list_repo_files(hf_path, repo_type="dataset", revision=revision)
     parquet_files = sorted(
-        f for f in list_repo_files(hf_path, repo_type="dataset", revision=revision)
-        if f.startswith("data/") and f.endswith(".parquet")
+        f for f in all_files
+        if f.startswith(IMAGE_CAPTIONS_DIR_PREFIX) and f.endswith(".parquet")
     )
     if not parquet_files:
+        parquet_files = sorted(
+            f for f in all_files
+            if f.startswith("data/") and f.endswith(".parquet")
+        )
+    if not parquet_files:
         raise FileNotFoundError(
-            f"No data/*.parquet files in {hf_path!r} — check the repo layout and that gated "
-            "access has been granted."
+            f"No {IMAGE_CAPTIONS_DIR_PREFIX}*.parquet (or data/*.parquet) files in {hf_path!r} — "
+            "check the repo layout."
         )
 
     frames = []

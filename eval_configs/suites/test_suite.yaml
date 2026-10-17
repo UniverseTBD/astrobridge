@@ -31,7 +31,7 @@ models:
   # - id: astrobridge
   #   responder_type: astrobridge
   #   name: "AstroBridge-v8"
-  #   astrobridge_id: UniverseTBD/astrobridge-model-v8
+  #   astrobridge_id: UniverseTBD/AstroBridge
   #   modal_gpu: "A10G"
   #   batch_size: 4
 

@@ -57,7 +57,7 @@ _OUT_BY_SIDE = {
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--side", choices=["equipped", "base"], default="equipped")
-    parser.add_argument("--repo-id", default="UniverseTBD/astrobridge-model-v7")
+    parser.add_argument("--repo-id", default="UniverseTBD/AstroBridge")
     parser.add_argument("--backend", choices=["local", "modal"], default="local")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--n", type=int, default=None, help="proportional sample size; omit for the full 266-object set")

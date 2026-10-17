@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 DEFAULT_HF_DATA_REPO: str = "UniverseTBD/AstroBridge-Data"
-DEFAULT_HF_EVALS_SUBDIR: str = "evals/spectra"
+DEFAULT_HF_EVALS_SUBDIR: str = "evals/spectra/benchmarks"
 
 def get_repo_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent
