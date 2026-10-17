@@ -1,7 +1,7 @@
 # Classification eval bench — trained model vs. base LLM
 
 Answers one question per modality: does the trained model (AION encoders + fusion stack +
-LoRA-adapted `Qwen/Qwen3.5-9B`, published at `UniverseTBD/astrobridge-model-v3_qwen`) actually
+LoRA-adapted `Qwen/Qwen3.5-9B`, published at `UniverseTBD/astrobridge-model-v8`) actually
 *understand* what it's looking at, measured against real external ground-truth labels — not
 whether its captions merely sound plausible. This is a first step, deliberately narrower than
 caption-quality eval: prompt the model to classify a labeled benchmark object into a fixed set of

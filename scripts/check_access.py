@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Checks HF access to everything this pipeline needs — two datasets (one of them gated, with a
-specific file this build depends on) and two gated-or-not models — before you sink real time
+"""Checks HF access to everything this pipeline needs — datasets (including required parquet files)
+and upstream open-access models (AION, ATCAT, Qwen3.5-9B) — before you sink real time
 into `make manifest`/`make cache`/`make stage1`. Metadata-only calls, no downloads.
 
 Run this first on any machine/account that hasn't used this project before: `make check-access`.
