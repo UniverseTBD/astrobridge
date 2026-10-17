@@ -36,7 +36,7 @@ from captioner.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-DATA_DIR_PREFIX = "data/"
+DATA_DIR_PREFIX = "observations/lightcurves/"
 
 # ATCAT's exported ONNX has a static sequence length of 243 (only `batch` is a symbolic axis), so
 # this is a property of the model, not a tunable.
@@ -70,29 +70,42 @@ def _read_parquet_columns(path: str, columns: list[str]) -> pd.DataFrame:
     return table.to_pandas(ignore_metadata=True)
 
 
-def _list_parquet_files(hf_path: str, revision: str | None) -> list[str]:
+def _list_parquet_files(
+    hf_path: str, revision: str | None, prefix: str = DATA_DIR_PREFIX
+) -> list[str]:
     from huggingface_hub import list_repo_files
 
+    all_files = list_repo_files(hf_path, repo_type="dataset", revision=revision)
     files = [
         f
-        for f in list_repo_files(hf_path, repo_type="dataset", revision=revision)
-        if f.startswith(DATA_DIR_PREFIX) and f.endswith(".parquet")
+        for f in all_files
+        if f.startswith(prefix) and f.endswith(".parquet")
     ]
+    if not files and prefix != "data/":
+        files = [
+            f
+            for f in all_files
+            if f.startswith("data/") and f.endswith(".parquet")
+        ]
     if not files:
         raise FileNotFoundError(
-            f"No parquet files found under {DATA_DIR_PREFIX!r} in {hf_path!r} — check the repo "
+            f"No parquet files found under {prefix!r} in {hf_path!r} — check the repo "
             "layout hasn't changed."
         )
     return sorted(files)
 
 
 def _download_and_read(
-    hf_path: str, revision: str | None, cache_dir: Path | None, columns: list[str]
+    hf_path: str,
+    revision: str | None,
+    cache_dir: Path | None,
+    columns: list[str],
+    prefix: str = DATA_DIR_PREFIX,
 ) -> pd.DataFrame:
     from huggingface_hub import hf_hub_download
 
     frames = []
-    for f in _list_parquet_files(hf_path, revision):
+    for f in _list_parquet_files(hf_path, revision, prefix=prefix):
         local_path = hf_hub_download(
             repo_id=hf_path,
             filename=f,

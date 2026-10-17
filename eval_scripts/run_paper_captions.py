@@ -192,7 +192,7 @@ def run_phase1_captions(
 ) -> List[str]:
     captions_dir.mkdir(parents=True, exist_ok=True)
     hf_repo = args.hf_repo or suite_config.get("hf_repo", DEFAULT_HF_DATA_REPO)
-    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/captions")
+    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/spectra/captions")
 
     executed = []
     for model in models_to_run:
@@ -602,8 +602,8 @@ def run_phase2_evals(
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     hf_repo = args.hf_repo or suite_config.get("hf_repo", DEFAULT_HF_DATA_REPO)
-    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/captions")
-    hf_eval_subdir = args.hf_eval_subdir or suite_config.get("hf_eval_subdir", f"evals/frontier_evals/{suite_config.get('suite_name', 'suite')}")
+    hf_subdir = args.hf_subdir or suite_config.get("hf_subdir", "evals/spectra/captions")
+    hf_eval_subdir = args.hf_eval_subdir or suite_config.get("hf_eval_subdir", "evals/spectra/results")
 
     task_cfgs = resolve_task_configs(args.tasks or args.task, suite_config.get("tasks"))
     frontier_cfg = resolve_frontier_config(

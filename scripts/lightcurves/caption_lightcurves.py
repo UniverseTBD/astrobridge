@@ -43,8 +43,8 @@ from captioner.data.transients_dataset import (
 )
 
 
-DATASET_ID = "BuildNg/astrobridge-transients-dataset"
-DATASET_REVISION = "9eb915d5c025d7c98dcbe6e7d7fa98b31551a441"
+DATASET_ID = "UniverseTBD/AstroBridge-Data"
+DATASET_REVISION = None
 MODEL = "gemini-3.7-flash"
 APPROVAL_ENV = "ASTROBRIDGE_GEMINI_APPROVED_RUN_ID"
 VALID_CLASSES = frozenset({"SN Ia", "SN II", "SN Ibc"})

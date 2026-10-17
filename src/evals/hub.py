@@ -47,7 +47,7 @@ def upload_caption_file(
         raise FileNotFoundError(f"Local caption file does not exist: {local_file}")
 
     repo_id = hf_repo or DEFAULT_HF_DATA_REPO
-    path_in_repo = hf_path or f"evals/captions/{local_file.name}"
+    path_in_repo = hf_path or f"evals/spectra/captions/{local_file.name}"
 
     auth_token = token or get_hf_token()
     if not auth_token:
@@ -99,7 +99,7 @@ def upload_folder_to_hf(
         raise NotADirectoryError(f"Local directory does not exist: {folder}")
 
     repo_id = hf_repo or DEFAULT_HF_DATA_REPO
-    path_in_repo = hf_path or f"evals/frontier_evals/{folder.name}"
+    path_in_repo = hf_path or f"evals/spectra/results/{folder.name}"
 
     auth_token = token or get_hf_token()
     if not auth_token:
@@ -194,7 +194,7 @@ def write_run_metadata(
         "suite_name": suite_config.get("suite_name", "unknown"),
         "benchmark": suite_config.get("benchmark", "all"),
         "hf_repo": suite_config.get("hf_repo", DEFAULT_HF_DATA_REPO),
-        "hf_subdir": suite_config.get("hf_subdir", "evals/captions"),
+        "hf_subdir": suite_config.get("hf_subdir", "evals/spectra/captions"),
         "models_run": models_run,
     }
 

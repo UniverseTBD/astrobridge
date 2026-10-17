@@ -22,12 +22,13 @@ It bridges frozen domain-specific foundation encoders into a frozen/LoRA-adapted
 - **Base LLM**: [`Qwen/Qwen3.5-9B`](https://huggingface.co/Qwen/Qwen3.5-9B) *(open access, not gated)*
 
 ### Training & Evaluation Datasets
-- **Spectra Observations & Gemini Captions**: [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) (`observations/spectra/` & `captions/spectra/`)
-- **Galaxy Images & Fused Captions**: [`gapatron/legacy_survey_south_images_captions`](https://huggingface.co/datasets/gapatron/legacy_survey_south_images_captions) & [`gapatron/astrobridge-image-captions`](https://huggingface.co/datasets/gapatron/astrobridge-image-captions)
-- **ZTF BTS Supernova Light Curves & Captions**: [`BuildNg/astrobridge-transients-dataset`](https://huggingface.co/datasets/BuildNg/astrobridge-transients-dataset)
-- **Held-out Spectra Benchmark (4 Tasks)**: [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) (`evals/spectra/{source_class,subclass,redshift,emission_lines}.parquet`)
-- **Held-out YSE Light Curve Benchmark**: [`BuildNg/astrobridge-yse-test-dataset-v2`](https://huggingface.co/datasets/BuildNg/astrobridge-yse-test-dataset-v2)
-- **Held-out Galaxy10 Image Benchmark**: [`astronolan/galaxy10-aion`](https://huggingface.co/datasets/astronolan/galaxy10-aion)
+All AstroBridge training observations, pre-generated captions, held-out spectra/light-curve benchmarks, and reference evaluation outputs are consolidated in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data):
+- **Spectra Observations & Gemini Captions**: `observations/spectra/spectra.parquet` & `captions/spectra/spectra_captions.jsonl`
+- **Galaxy Image Observations & Fused Captions**: `observations/images/legacy_south_all_images.parquet` & `captions/images/train-*.parquet`
+- **ZTF BTS Supernova Light Curves & Captions**: `observations/lightcurves/part-*.parquet`
+- **Held-out Spectra Benchmark, Model Captions & Frontier Judge Results**: `evals/spectra/{benchmarks,captions,results}/`
+- **Held-out YSE Light Curve Benchmark**: `evals/lightcurves/yse/part-*.parquet`
+- **External Galaxy10 & Galaxy Zoo DECaLS Image Benchmarks**: [`astronolan/galaxy10-aion`](https://huggingface.co/datasets/astronolan/galaxy10-aion) & [`astronolan/gz-decals-embeddings`](https://huggingface.co/datasets/astronolan/gz-decals-embeddings)
 
 ---
 
@@ -86,7 +87,7 @@ make lightcurve-captions ARGS="--dry-run --limit 5"
 Outputs JSONL ledgers and consolidated parquet files to `outputs/lightcurve_captions/`.
 
 ### Image Captions
-Pre-generated captions are hosted directly at [`gapatron/astrobridge-image-captions`](https://huggingface.co/datasets/gapatron/astrobridge-image-captions).
+Pre-generated fused image captions (`caption_fused`) are hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `captions/images/train-*.parquet`.
 
 ---
 
@@ -108,7 +109,7 @@ Downloads and aligns captions across all three modalities against the master man
 ```bash
 make captions
 # Or override with a locally generated spectra captions file:
-# make captions SPECTRA_CAPTIONS=outputs/captions/spectra/captions_combined_ground_truth_v1_gemini-3_8-flash.jsonl
+# make captions SPECTRA_CAPTIONS=outputs/captions/spectra/captions.jsonl
 ```
 *Output*: `outputs/captions/captions.parquet` and `outputs/captions/decomposition_report.json`.
 
@@ -168,9 +169,9 @@ make infer \
 ## 3. Replicating Paper Evaluations
 
 ### 3.1 Spectra Evaluation Suite (Table 1a)
-Evaluates AstroBridge against vision and text baseline LLMs on the **held-out spectra test benchmark** hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `evals/spectra/` (`source_class.parquet`, `subclass.parquet`, `redshift.parquet`, and `emission_lines.parquet`, automatically downloaded to `data/benchmarks/` on first run) across 4 astrophysical tasks (`source`, `subclass`, `distance`, `emission_lines`) configured in [`eval_configs/suites/paper_controls.yaml`](eval_configs/suites/paper_controls.yaml):
-- **Phase 1 (`--phase 1`)**: Generates or pulls cached model captions (`eval_results/cached_captions/*.jsonl`) for the held-out spectra test objects.
-- **Phase 2 (`--phase 2`)**: Uses a frontier judge (`gemini-4-argon` via `GEMINI_API_KEY`) to extract structured predictions from captions and computes accuracy, macro F1, redshift/distance error metrics, and 1,000-iteration bootstrap 95% confidence intervals.
+Evaluates AstroBridge against vision and text baseline LLMs on the **held-out spectra test benchmark** hosted in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data) under `evals/spectra/benchmarks/` (`source_class.parquet`, `subclass.parquet`, `redshift.parquet`, and `emission_lines.parquet`, automatically downloaded to `data/benchmarks/` on first run) across 4 astrophysical tasks (`source`, `subclass`, `distance`, `emission_lines`) configured in [`eval_configs/suites/paper_controls.yaml`](eval_configs/suites/paper_controls.yaml):
+- **Phase 1 (`--phase 1`)**: Generates or pulls cached model captions (`evals/spectra/captions/*.jsonl` -> `eval_results/cached_captions/*.jsonl`) for the held-out spectra test objects.
+- **Phase 2 (`--phase 2`)**: Uses a frontier judge (`gemini-3.8-flash` via `GEMINI_API_KEY`) to extract structured predictions from captions and computes accuracy, macro F1, redshift/distance error metrics, and 1,000-iteration bootstrap 95% confidence intervals (reference results hosted in `evals/spectra/results/`).
 
 ```bash
 # Run both Phase 1 (caption generation/pull) and Phase 2 (frontier judge + metrics):
@@ -182,12 +183,12 @@ make eval-spectra PHASE=2
 # Run for a single model or task:
 make eval-spectra PHASE=2 ARGS="--model astrobridge --task source"
 ```
-*Output*: `eval_results/paper_controls/` (per-model JSONLs, `aggregated_metrics.json`, and `summary_table.md`).
+*Output*: `eval_results/paper_evals/paper_controls/` (per-model JSONLs, `summary_metrics.json`, `summary_table.csv`, and `comparison_table.csv`).
 
 ---
 
 ### 3.2 Light Curve Evaluation Suite (Table 1b & Appendix D)
-Evaluates supernova classification (`SN Ia`, `SN II`, `SN Ibc`) on the held-out 266-object **Young Supernova Experiment (YSE)** benchmark (`BuildNg/astrobridge-yse-test-dataset-v2`).
+Evaluates supernova classification (`SN Ia`, `SN II`, `SN Ibc`) on the held-out 266-object **Young Supernova Experiment (YSE)** benchmark (`evals/lightcurves/yse/` in [`UniverseTBD/AstroBridge-Data`](https://huggingface.co/datasets/UniverseTBD/AstroBridge-Data)).
 
 1. **Prepare immutable YSE benchmark artifacts** (manifests, flux tables, rendered plots, and checksums):
    ```bash

@@ -332,7 +332,7 @@ def main() -> None:
     parser.add_argument("--repetition-penalty", type=float, default=None, help="Override repetition_penalty.")
     parser.add_argument("--push-to-hf", action="store_true", help="Upload resulting captions.jsonl to Hugging Face Hub.")
     parser.add_argument("--hf-repo", type=str, default=None, help="Hugging Face repo ID (default: UniverseTBD/AstroBridge-Data).")
-    parser.add_argument("--hf-path", type=str, default=None, help="Target path in HF repo (default: evals/captions/<filename>).")
+    parser.add_argument("--hf-path", type=str, default=None, help="Target path in HF repo (default: evals/spectra/captions/<filename>).")
     args = parser.parse_args()
 
     dotenv.load_dotenv()

@@ -41,10 +41,10 @@ TABLE_CONTEXT = (
 CHART_CONTEXT = "The attached light-curve chart is the supplied observation."
 
 MAX_NEW_TOKENS = 512
-YSE_DATASET_ID = "BuildNg/astrobridge-yse-test-dataset-v2"
-YSE_REVISION = "6c2e04c3dee6cbc70e4ce543bfa6dbdec35661fc"
-DEVELOPMENT_DATASET_ID = "BuildNg/astrobridge-transients-dataset"
-DEVELOPMENT_REVISION = "9eb915d5c025d7c98dcbe6e7d7fa98b31551a441"
+YSE_DATASET_ID = "UniverseTBD/AstroBridge-Data"
+YSE_REVISION = None
+DEVELOPMENT_DATASET_ID = "UniverseTBD/AstroBridge-Data"
+DEVELOPMENT_REVISION = None
 V8_REPO_ID = "UniverseTBD/astrobridge-model-v8"
 V8_REVISION = "ff01f90b75eda50b387fed53e2aa09b515918dcb"
 ATCAT_REVISION = "399baebe003f56ff9d0c2ed80107be93cc2626f8"
